@@ -1,6 +1,7 @@
 <script>
   import axios from "axios";
   import { createEventDispatcher } from "svelte";
+  import { fly } from "svelte/transition";
 
   const dispatch = createEventDispatcher();
 
@@ -14,33 +15,38 @@
     if (res.data.status === "success") todosList = res.data.data.results;
     todosList.sort((a, b) => -1);
   })();
-  function addPostTodo({ detail: todo }) {
-    todosList = [todo, ...todosList];
-    console.log(todo);
+
+  // CreateTodo Function
+  function todosCreated(res) {
+    return res.data.status === "success";
   }
   async function onSubmit(event) {
     event.preventDefault();
-    let todos = event.target.value;
-
-    // if (todos.trim() === "") return;
-    // dispatch("todosCreadted", { text: todos });
-    todosList = [todos, ...todosList];
-    // console.log(todos);
+    let res = await axios.post("http://localhost:2020/addTodo", {
+      todo: todos
+    });
+    console.log(res.status);
+    if (todosCreated(res)) {
+      let todo = res.data.data.todoList;
+      todosList = [todo, ...todosList];
+      todos = "";
+    }
   }
   function editTodo(toDo) {
     console.log(toDo);
+  }
+
+  // Delete Function
+  function removeTodo(res) {
+    return res.data.status === "success";
   }
   async function deleteTodo(id) {
     const deleteTodo = await axios.delete(
       `http://localhost:2020/deleteTodo/${id}`
     );
-    if (deleteTodo.data.status === "success") {
-      // location.reload();
-
-      console.log(deleteTodo);
-
+    console.log(deleteTodo.status);
+    if (removeTodo(deleteTodo)) {
       todosList = todosList.filter(t => t._id != id);
-      console.log(todosList);
     }
   }
 </script>
@@ -54,12 +60,7 @@
   <button type="submit" class="btn btn-default">click to get todoList</button>
 </form> -->
 
-<form
-  action="http://localhost:2020/addTodo"
-  method="POST"
-  id="todoForm"
-  on:submit={onSubmit}
-  on:todosCreated={addPostTodo}>
+<form id="todoForm" on:submit={onSubmit}>
   <!-- Medium input -->
   <div class="md-form">
     <input
@@ -79,7 +80,9 @@
   {:else}
     {#each todosList as todoList, i}
       <div class="d-flex mt-2">
-        <p class=" mt-4 bg-dark col-md text-light pl-3">
+        <p
+          class=" mt-4 bg-dark col-md text-light pl-3"
+          transition:fly={{ y: 200, duration: 2000 }}>
           {i + 1}: {todoList.todo}
         </p>
         <button
