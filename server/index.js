@@ -12,6 +12,7 @@ app = controllers(app);
 app.listen(PORT, () => {
     console.log(`Port ringing on ${PORT}`);
 
+    mongoose.set('useFindAndModify', false);
     mongoose.connect('mongodb://localhost:27017/todoAppSapper', {
         useNewUrlParser: true,
         useUnifiedTopology: true

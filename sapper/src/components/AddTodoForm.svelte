@@ -1,12 +1,14 @@
 <script>
   import axios from "axios";
   import { createEventDispatcher } from "svelte";
-  import { fly } from "svelte/transition";
+  import { fly, fade } from "svelte/transition";
+  import ModalEdit from "./ModalEdit.svelte";
 
   const dispatch = createEventDispatcher();
 
   let todos = "";
   let todosList = [];
+  let editButtonClick = false;
 
   (async () => {
     const res = await axios.get("http://localhost:2020");
@@ -32,8 +34,20 @@
       todos = "";
     }
   }
-  function editTodo(toDo) {
-    console.log(toDo);
+
+  // editTodo Fucntion
+  function id(id) {
+    // let ids= req.params.id
+    return id;
+  }
+  async function editTodo(id) {
+    editButtonClick = true;
+    let res = await axios.put(`http://localhost:2020/editTodo/${id}`, {
+      _id: id,
+      todo: todos
+    });
+    console.log(res);
+    console.log(id);
   }
 
   // Delete Function
@@ -54,11 +68,6 @@
 <style>
 
 </style>
-
-<!-- <form action="http://localhost:2020/addTodo" method="POST">
-  <input type="text" class="form-control" name="todo" />
-  <button type="submit" class="btn btn-default">click to get todoList</button>
-</form> -->
 
 <form id="todoForm" on:submit={onSubmit}>
   <!-- Medium input -->
@@ -82,12 +91,15 @@
       <div class="d-flex mt-2">
         <p
           class=" mt-4 bg-dark col-md text-light pl-3"
-          transition:fly={{ y: 200, duration: 2000 }}>
+          transition:fly={{ y: 200, duration: 2000 }}
+          on:introstart={() => 'intro started'}>
           {i + 1}: {todoList.todo}
         </p>
         <button
           class="btn btn-primary btn-sm todo-btn flex-sm-row-reverse"
-          on:click={() => editTodo(todoList)}>
+          data-toggle="modal"
+          data-target="#basicExampleModal"
+          on:click={() => editTodo(todoList._id)}>
           <i class="fas fa-pen-fancy" />
         </button>
         <button
@@ -96,7 +108,11 @@
           <i class="fas fa-trash-alt" />
         </button>
       </div>
+
+      {#if editButtonClick === true}
+        <!-- Modal -->
+        <ModalEdit todo={todoList.todo} />
+      {/if}
     {/each}
   {/if}
-
 </div>

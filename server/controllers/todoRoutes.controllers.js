@@ -1,11 +1,9 @@
 import Todo from '../model/todo.schema.js';
 
 
-
+// Getting All todos
 export let getAllTodo = async (req, res, next) => {
     let results = await Todo.find();
-
-    // res.send(results);
     res.json({
         status: 'success',
         data: {
@@ -13,6 +11,8 @@ export let getAllTodo = async (req, res, next) => {
         }
     });
 };
+
+// Positing a Todo
 export let postTodo = async (req, res, next) => {
     const { todo } = req.body;
     console.log(todo);
@@ -26,8 +26,21 @@ export let postTodo = async (req, res, next) => {
             todoList
         }
     });
-    // res.redirect('http://localhost:3000/addTodo');
 };
+
+// Editing a Todo
+export let editTodo = async (req, res, next) => {
+    let editTodo = await Todo.findByIdAndUpdate({ _id: req.params.id }, req.body);
+    let editTodos = await Todo.findById(req.params.id);
+    res.json({
+        status: 'success',
+        data: {
+            editTodos
+        }
+    });
+};
+
+// Deleting a Todo
 export let deleteTodo = async (req, res, next) => {
     let todoRemoved = await Todo.findById(req.params.id);
     Todo.deleteOne({ _id: req.params.id }, (err, id) => {
